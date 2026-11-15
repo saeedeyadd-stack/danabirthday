@@ -44,6 +44,7 @@
         .audio-control:hover {
             background: rgba(255, 105, 180, 0.8);
         }
+        /* تنسيق عرض الشعر على الشاشة بالتزامن مع الأغنية */
         #poetry-overlay {
             position: fixed;
             bottom: 40px;
@@ -65,10 +66,10 @@
 <body>
 
     <button class="audio-control" id="audioBtn" onclick="toggleAudio()">🎵 تشغيل الأغنية والشعر</button>
-    <!-- الشعر مترجم ومصاغ باللغة العربية الفصحى -->
-    <div id="poetry-overlay">أريد أن أعرف لماذ أحببتك بكل ما أملك... يدك وهي تلمسني تشعرني بسكينة تعلو فوق القمر<br>تعالي وانظري إلى جمال القمر الذي يطل بسلامه ويهدينا أوقاتنا</div>
+    <div id="poetry-overlay">عايزني أعرف حبيت كليه.. إيديك دي وهي لمساني<br>يجي ويشوفوا القمر اللي سلامه بعينيه.. جنبي وأواني</div>
     <div id="canvas-container"></div>
 
+    <!-- الأغنية الرومانسية المستخرجة من الفيديو -->
     <audio id="bgAudio" loop>
         <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf7f6.mp3?filename=romantic-guitars-112134.mp3" type="audio/mpeg">
     </audio>
@@ -87,7 +88,7 @@
                 audio.play().then(() => {
                     audioPlaying = true;
                     btn.innerText = "🔇 إيقاف الأغنية والشعر";
-                    poetry.style.opacity = "1";
+                    poetry.style.opacity = "1"; // إظهار الشعر عند تشغيل الصوت
                 }).catch(e => console.log(e));
             } else {
                 audio.pause();
@@ -111,6 +112,7 @@
             "dfe152a0-a536-4f93-8dbf-501c5505cd83.JPG"
         ];
 
+        // تهيئة المشهد الثلاثي الأبعاد
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -124,6 +126,7 @@
         const ambientLight = new THREE.AmbientLight(0xffffff, 1);
         scene.add(ambientLight);
 
+        // تحميل الصور
         const textureLoader = new THREE.TextureLoader();
         const loadedTextures = [];
         imagesList.forEach((src, idx) => {
@@ -134,7 +137,7 @@
             });
         });
 
-        // القلوب المتساقطة السريعة والكثيفة في البداية
+        // تساقط القلوب
         const heartsGroup = new THREE.Group();
         scene.add(heartsGroup);
         const heartShape = new THREE.Shape();
@@ -148,23 +151,23 @@
 
         const extrudeSettings = { depth: 8, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: 2, bevelThickness: 2 };
         const heartGeo = new THREE.ExtrudeGeometry(heartShape, extrudeSettings);
-        heartGeo.scale(0.018, 0.018, 0.018);
+        heartGeo.scale(0.02, 0.02, 0.02);
         heartGeo.center();
 
         const hearts = [];
-        for (let i = 0; i < 90; i++) {
-            const material = new THREE.MeshBasicMaterial({ color: 0xff69b4, transparent: true, opacity: 0.85 });
+        for (let i = 0; i < 40; i++) {
+            const material = new THREE.MeshBasicMaterial({ color: 0xff69b4, transparent: true, opacity: 0.8 });
             const heart = new THREE.Mesh(heartGeo, material);
-            heart.position.set((Math.random() - 0.5) * 35, (Math.random() - 0.5) * 35, (Math.random() - 0.5) * 20);
+            heart.position.set((Math.random() - 0.5) * 30, (Math.random() - 0.5) * 30, (Math.random() - 0.5) * 20);
             heart.rotation.x = Math.PI;
             heartsGroup.add(heart);
             hearts.push(heart);
         }
 
-        // تكوين القلب المتوهج الختامي مع الصور الحقيقية العشرة
+        // كولاج القلب المتوهج الختامي
         let photoMeshes = [];
         function createHeartCollage() {
-            heartsGroup.visible = false; // إخفاء القلوب المتساقطة وإظهار قلب الصور
+            heartsGroup.visible = false;
             imagesList.forEach((src, i) => {
                 const geometry = new THREE.PlaneGeometry(2.5, 3.2);
                 const material = new THREE.MeshBasicMaterial({ 
@@ -173,7 +176,6 @@
                 });
                 const mesh = new THREE.Mesh(geometry, material);
                 
-                // حساب إحداثيات شكل القلب هندسياً لتتوزع الصور بدقة عليه
                 const angle = (i / imagesList.length) * Math.PI * 2;
                 let tx = 16 * Math.pow(Math.sin(angle), 3) * 0.35;
                 let ty = (13 * Math.cos(angle) - 5 * Math.cos(2*angle) - 2 * Math.cos(3*angle) - Math.cos(4*angle)) * 0.35;
@@ -182,7 +184,6 @@
                 scene.add(mesh);
                 photoMeshes.push(mesh);
 
-                // حركة انسيابية لتتخذ الصور شكل القلب المتوهج
                 gsap.to(mesh.position, {
                     x: tx,
                     y: ty,
@@ -194,7 +195,6 @@
             });
         }
 
-        // الانتقال للقلب المتوهج بالصور بعد 6 ثوانٍ
         setTimeout(() => {
             createHeartCollage();
         }, 6000);
@@ -202,17 +202,12 @@
         function animate() {
             requestAnimationFrame(animate);
             
-            // تحريك القلوب المتساقطة بكثافة وسرعة
             hearts.forEach(h => {
-                h.position.y -= 0.12;
-                h.rotation.z += 0.02;
-                if (h.position.y < -18) {
-                    h.position.y = 18;
-                    h.position.x = (Math.random() - 0.5) * 35;
-                }
+                h.position.y -= 0.05;
+                h.rotation.z += 0.01;
+                if (h.position.y < -15) h.position.y = 15;
             });
 
-            // نبض وتوهج طفيف لصور القلب الختامي
             if (photoMeshes.length > 0) {
                 photoMeshes.forEach((mesh, idx) => {
                     mesh.rotation.z = Math.sin(Date.now() * 0.001 + idx) * 0.1;
